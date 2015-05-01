@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Attached Downloads</id>
+	<version>6</version>
+	<vqmver required="true">2.5.0</vqmver>
+	<author>microdotech.com</author>
+
+	<!-- Controller -->
+	<file name="admin/controller/sale/order.php">
+		<operation>
+			<search position="after"><![CDATA[$data['heading_title'] = $this->language->get('heading_title');]]></search>
+			<add><![CDATA[
+				//$this->document->addStyle('//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css');
+			]]>
+			</add>
+		</operation>
+
+	</file>
+
+	<!-- View -->
+	<file name="admin/view/template/sale/order_info.tpl">
+		<operation>
+			<!-- Tab -->
+			<search position="before"><![CDATA[<li><a href="#tab-history" data-toggle="tab"><?php echo $tab_history; ?></a></li>]]>
+			</search>
+			<add><![CDATA[
+				<li><a href="#tab-attached-download" data-toggle="tab"><?php echo 'Attached Download'; ?></a></li>
+			]]></add>
+		</operation>
+		<operation>
+			<!-- Tab Content -->
+			<search position="before"><![CDATA[<div class="tab-pane" id="tab-history">]]></search>
+			<add><![CDATA[
+				<div class="tab-pane" id="tab-attached-download">
+					<div id="attached-download"></div>
+
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="panel panel-success">
+								<div class="panel-heading"><h3 class="panel-title"><i class="fa fa-upload"></i> Attach a new file:</h3></div>
+							  	<div class="panel-body">
+									<form enctype="multipart/form-data" class="form-inline" id="atd_upload">
+										<input type="file" name="file" id="atd_file" style="display:none">
+										<div class="input-group">
+											<!-- File Name -->
+											<input type="text" class="form-control" name="filename" id="atd_filename" placeholder="File Name" onclick="$('#atd_file').click();">
+									        <span class="input-group-btn">
+									        	<button class="btn btn-default" type="button" onclick="$('#atd_file').click();"><i class="fa fa-paperclip"></i> Browse</button>
+									        </span>
+										</div>
+										<div class="form-group">
+											<!-- Mask -->
+											<input type="text" class="form-control" name="mask" id="atd_mask" placeholder="Mask">
+										</div>
+										<div class="form-group">
+											<button type="button" name="atd_access" id="atd_access" class="btn btn-default active"><i class="fa fa-check-square-o" id="atd_access_icon"></i> Customer can access</button>
+										</div>
+										<div class="form-group">
+											<button type="button" class="btn btn-success"  data-loading-text="Loading..." id="button-upload" onclick="atd_upload();"><i class="fa fa-upload"></i> Upload</button>
+										</div>
+									</form>
+							  </div>
+							</div>
+
+							<!-- File Table -->
+							<div class="panel panel-default">
+							    <div class="panel-heading clearfix">
+							    	<h3 class="panel-title" style="padding-top: 7.5px;"><i class="fa fa-files-o"></i> Attached Files:</h3>
+							    	<div class="pull-right">
+							    		<button class="btn btn-info" onclick="atd_getDownloads();" data-toggle="tooltip" data-original-title="Refresh Files"><i class="fa fa-refresh" id="atd_refresh"></i></button>
+							    	</div>
+							    </div>
+								<table class="table table-bordered" id="attached_download">
+									<thead>
+										<tr>
+											<td>Filename</td>
+											<td>Mask</td>
+											<td>Customer Access</td>
+											<td>Date Added</td>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- ATD Modal Popup -->
+					<div class="modal fade" id="atd_modal" tabindex="-1">
+					    <div class="modal-dialog">
+					        <div class="modal-content">
+					            <div class="modal-header">
+					                <button class="close" data-dismiss="modal" type="button"><span>&times;</span></button>
+					                <h4 class="modal-title"><b>Module: Attached Download</b></h4>
+					            </div>
+					            <div class="modal-body">
+					              	<p class="text-danger" id="atd_modal_body"></p>
+					            </div>
+					            <div class="modal-footer">
+					                <button class="btn btn-default" data-dismiss="modal" type="button">Close</button> 
+					            </div>
+					        </div>
+					    </div>
+					</div>
+				</div>
+
+			]]>
+			</add>
+		</operation>
+		<!-- Javascript -->
+		<operation>
+			<search position="before"><![CDATA[<?php echo $footer; ?>]]></search>
+			<add><![CDATA[
+				<script>
+						//Get Downloads on page load
+						atd_getDownloads();
+
+						//Monitor file upload button
+						$('#atd_file').change(function() {
+							$('#atd_filename').val($(this).val().split(/(\\|\/)/g).pop());
+							$('#atd_mask').val($(this).val().split(/(\\|\/)/g).pop());
+						});
+
+						//Monitor access checkbox
+						$('#atd_access').click(function(){
+							$('#atd_access').toggleClass('active');
+							$('#atd_access_icon').toggleClass('fa-check-square-o fa-square-o');
+						});
+
+						//Monitor access update
+						$(document).on('click','.atd_access_update',function(){
+						   	$(this).toggleClass('label-success label-danger');
+						   	$(this).text(($(this).text() == 'Yes') ? 'No' : 'Yes');
+						   	var access = ($(this).data('access') == '1') ? '0' : '1';
+
+						   	var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&access=' + 
+						   	access + '&id=' + $(this).data('id');
+						   	
+						   	$.getJSON(url);
+
+						});
+
+						//Monitor mask edit
+						$(document).on('blur','.atd_mask_update',function(){
+							var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&mask=' + $(this).text() + '&id=' + $(this).data('id');
+						   	$.getJSON(url);
+
+							$(this).toggleClass('text-success');
+					    });
+
+
+						//Get downloads function
+						function atd_getDownloads(){
+							//Add spin to refresh button
+							$('#atd_refresh').addClass('fa-spin fa-refresh')
+								.removeClass('fa-check');
+
+							//Clear table
+							$("#attached_download tbody tr").remove();
+
+							//Get Download List For Order #
+							var url = 'index.php?route=module/attached_download/get_order_download&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>';
+							$.getJSON(url,
+			                    function(data){
+			                        if (!data['err']) {
+			                            //Loop through json return
+			                            $.each(data, function (key, value) {
+			                            	atd_addRow(value['id'], value['filename'], value['mask'], value['date'], value['access'], value['link']);
+			                            });
+			                        }else{
+			                        	//Show Error
+			                        	$('#atd_modal_body').text(data['err']);
+										$('#atd_modal').modal('show');
+			                        }
+		                    }); //End getJSON
+
+		                    //Remove spinner
+		                    setTimeout(function(){
+		                    	$('#atd_refresh').removeClass('fa-spin').toggleClass('fa-refresh fa-check');
+							}, 500);
+			            }
+
+			            //Add downloads to table
+						function atd_addRow(id, filename, mask, date, access, link){
+							var accessClass = 'label-success';
+							var accessText = 'Yes';
+							if(access == false){
+								accessClass = 'label-danger';
+								accessText = 'No';
+							}
+
+							var buttons = '<button class="btn btn-info"><i class="fa fa-pencil"></i></button>';
+
+							var table = '<tr><td><a href="' + link + '">' + filename + '</a></td>' +
+								'<td contenteditable="true" class="atd_mask_update" data-id="' + id + '">' + mask + '</td>' +
+								'<td><span data-access="' + access + '" data-id="' + id + '" style="cursor: pointer;" class="label ' + accessClass + ' atd_access_update">' + accessText + '</span></td>' +
+								'<td>' + date + '</td>' +
+								'</tr>';
+							$('#attached_download > tbody:last').append(table);
+						}
+
+						//Upload new file
+						function atd_upload(){
+
+							if ($('#atd_upload input[name=\'file\']').val() != '') {
+								$.ajax({
+									url: 'index.php?route=catalog/download/upload&token=<?php echo $token; ?>',
+									type: 'post',		
+									dataType: 'json',
+									data: new FormData($('#atd_upload')[0]),
+									cache: false,
+									contentType: false,
+									processData: false,		
+									beforeSend: function() {
+										$('#button-upload').button('loading');
+									},
+									complete: function() {
+										$('#button-upload').button('reset');
+									},	
+									success: function(json) {
+										if (json['error']) {
+											$('#atd_modal_body').text(json['error']);
+											$('#atd_modal').modal('show');
+										}
+													
+										if (json['success']) {
+											//Add to atd database
+											var access;
+											
+											if ($('#atd_access').hasClass('active')){
+												access = true;
+											}else{
+												access = false;
+											}
+
+											var mask = $('#atd_mask').val();
+											var url = 'index.php?route=module/attached_download/upload&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&filename=' + json['filename'] + '&mask=' + mask + '&access=' + access;
+											$.getJSON(url,
+							                    function(data){
+							                        if (!data['err']) {
+
+							                        }else{
+							                        	//Show Error
+							                        	$('#atd_modal_body').text(data['err']);
+														$('#atd_modal').modal('show');
+							                        }
+						                    }); //End getJSON
+
+											//Clear form for new upload!!!!
+											$('#atd_upload').trigger('reset');
+
+											//Alert user
+											//alert('File Uploaded!!!!');
+
+											//Get New file list
+											atd_getDownloads();
+										}
+									},			
+									error: function(xhr, ajaxOptions, thrownError) {
+										//alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+										$('#atd_modal_body').text(thrownError);
+										$('#atd_modal').modal('show');
+									}
+								});
+							};
+						}
+				</script>
+			]]></add>
+		</operation>
+	</file>
+</modification>
