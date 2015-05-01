@@ -5,22 +5,7 @@ class ControllerModuleAttachedDownload extends Controller {
 	 * Install Function
 	 */
 	public function install(){
-		//Setup database table
-		// $sql = "";
-		// $query = $this->db->query($sql);
 
-		//$this->config->set('config_attached_download', true);
-
-
-	}
-
-	public function test(){
-		$this->load->model('setting/setting'); 
-		$this->model_setting_setting->editSetting('attached_download', ['active' => true]); 
-
-		$settings = $this->model_setting_setting->getSetting('attached_download');
-
-		print_r($settings);
 	}
 
 	public function index() {
