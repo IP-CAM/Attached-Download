@@ -1,13 +1,29 @@
 <?php
+error_reporting(E_ALL);
+
 class ControllerModuleAttachedDownload extends Controller {
 
 	/**
 	 * Install Function
 	 */
 	public function install(){
+		$sql = "CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "attached_download` (
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `order_id` int(11) NOT NULL,
+		  `access` int(11) NOT NULL DEFAULT '1',
+		  `filename` varchar(128) DEFAULT NULL,
+		  `mask` varchar(145) DEFAULT NULL,
+		  `date_added` datetime DEFAULT NULL,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=0 ;";
 
+		$query = $this->db->query($sql);
 	}
 
+	/**
+	 * Index
+	 * Default function
+	 */
 	public function index() {
 
 		$this->language->load('module/attached_download');
@@ -65,8 +81,6 @@ class ControllerModuleAttachedDownload extends Controller {
         $this->response->setOutput($this->load->view('module/attached_download.tpl', $data));
 	}
 
-
-
 	/**
 	 * Get list of downloads per order
 	 * @return array json array
@@ -102,11 +116,12 @@ class ControllerModuleAttachedDownload extends Controller {
 	public function upload(){
 		if($this->request->get['order_id']){
 			$order_id = $this->request->get['order_id'];
+			$customer_id = $this->request->get['customer_id'];
 			$filename = $this->request->get['filename'];
 			$mask = $this->request->get['mask'];
 			$access = $this->request->get['access'];
 
-			$sql = "INSERT INTO " . DB_PREFIX . "attached_download (`order_id`, `filename`, `mask`, `access`, `date_added`) VALUES ('$order_id', '$filename', '$mask', $access, NOW())";
+			$sql = "INSERT INTO " . DB_PREFIX . "attached_download (`order_id`, `customer_id`, `filename`, `mask`, `access`, `date_added`) VALUES ('$order_id', $customer_id, '$filename', '$mask', $access, NOW())";
 			$query = $this->db->query($sql);
 
 			if(!$query){
@@ -167,9 +182,7 @@ class ControllerModuleAttachedDownload extends Controller {
 					if (ob_get_level()) {
 						ob_end_clean();
 					}
-
 					readfile($file, 'rb');
-
 					exit();
 				} else {
 					exit('Error: Could not find file ' . $file . '!');
@@ -180,22 +193,53 @@ class ControllerModuleAttachedDownload extends Controller {
 		}
 	}
 
+	/*
+	 * Delete a file
+	 */
+	public function delete(){
+		//Get the filename to delete
+		$sql = "SELECT * FROM " . DB_PREFIX . "attached_download WHERE id='" . $this->request->get['id'] . "'"; 
+		$query = $this->db->query($sql);
+
+		$download_info = $query->row; //Download info array
+
+		//Remove the file from the folder directory (Opencart doesnt do this by default so we will just take care of it here)
+		unlink(DIR_DOWNLOAD . $download_info['filename']);
+
+		//Remove from the atd_database
+		$sql = "DELETE FROM " . DB_PREFIX . "attached_download WHERE id='" . $this->request->get['id'] . "'";
+		$query = $this->db->query($sql);
+
+		if(!$query){
+			echo json_encode(['err' => 'Unable to delete file.']);
+		}else{
+			echo json_encode(['err' => false]);
+		}
+	}
+
 	/**
 	 * Validate some shit.
-	 * @return [type] [description]
 	 */
 	public function validate() {
-
         if (!$this->user->hasPermission('modify', 'module/attached_download')) {
-                $this->error['warning'] = $this->language->get('error_permission');
+            $this->error['warning'] = $this->language->get('error_permission');
         }
-                
         if (!$this->error) {
-                return true;
+            return true;
         } else {
-                return false;
+           return false;
         }
 	}
-}
 
+	/**
+	 * Test Function for some testing of some stuff
+	 */
+	public function test(){
+		$this->load->model('setting/setting'); 
+		$this->model_setting_setting->editSetting('atd', [
+			'atd_client_dl' => true, 
+			'atd_active' => true
+			]);
+	}
+}
 ?>

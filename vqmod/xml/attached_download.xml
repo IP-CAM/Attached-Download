@@ -10,101 +10,109 @@
 		<operation>
 			<search position="after"><![CDATA[$data['heading_title'] = $this->language->get('heading_title');]]></search>
 			<add><![CDATA[
-				//$this->document->addStyle('//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css');
+				$data['atd_active'] = $this->config->get('atd_active');
 			]]>
 			</add>
 		</operation>
-
+		<operation>
+			<search position="after"><![CDATA[$data['lastname'] = $order_info['lastname'];]]></search>
+			<add><![CDATA[$data['customer_id'] = $order_info['customer_id'];]]></add>
+		</operation>
 	</file>
 
-	<!-- View -->
 	<file name="admin/view/template/sale/order_info.tpl">
 		<operation>
 			<!-- Tab -->
 			<search position="before"><![CDATA[<li><a href="#tab-history" data-toggle="tab"><?php echo $tab_history; ?></a></li>]]>
 			</search>
 			<add><![CDATA[
-				<li><a href="#tab-attached-download" data-toggle="tab"><?php echo 'Attached Download'; ?></a></li>
+				<?php if($atd_active == true): ?>
+					<li><a href="#tab-attached-download" data-toggle="tab"><?php echo 'Attached Files'; ?></a></li>
+				<?php endif; ?>
 			]]></add>
 		</operation>
 		<operation>
 			<!-- Tab Content -->
 			<search position="before"><![CDATA[<div class="tab-pane" id="tab-history">]]></search>
 			<add><![CDATA[
-				<div class="tab-pane" id="tab-attached-download">
-					<div id="attached-download"></div>
+				<?php if($atd_active == true): ?>
+					<div class="tab-pane" id="tab-attached-download">
+						<div id="attached-download"></div>
 
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="panel panel-success">
-								<div class="panel-heading"><h3 class="panel-title"><i class="fa fa-upload"></i> Attach a new file:</h3></div>
-							  	<div class="panel-body">
-									<form enctype="multipart/form-data" class="form-inline" id="atd_upload">
-										<input type="file" name="file" id="atd_file" style="display:none">
-										<div class="input-group">
-											<!-- File Name -->
-											<input type="text" class="form-control" name="filename" id="atd_filename" placeholder="File Name" onclick="$('#atd_file').click();">
-									        <span class="input-group-btn">
-									        	<button class="btn btn-default" type="button" onclick="$('#atd_file').click();"><i class="fa fa-paperclip"></i> Browse</button>
-									        </span>
-										</div>
-										<div class="form-group">
-											<!-- Mask -->
-											<input type="text" class="form-control" name="mask" id="atd_mask" placeholder="Mask">
-										</div>
-										<div class="form-group">
-											<button type="button" name="atd_access" id="atd_access" class="btn btn-default active"><i class="fa fa-check-square-o" id="atd_access_icon"></i> Customer can access</button>
-										</div>
-										<div class="form-group">
-											<button type="button" class="btn btn-success"  data-loading-text="Loading..." id="button-upload" onclick="atd_upload();"><i class="fa fa-upload"></i> Upload</button>
-										</div>
-									</form>
-							  </div>
-							</div>
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="panel panel-success">
+									<div class="panel-heading"><h3 class="panel-title"><i class="fa fa-upload"></i> Attach a new file:</h3></div>
+								  	<div class="panel-body">
+										<form enctype="multipart/form-data" class="form-inline" id="atd_upload">
+											<input type="file" name="file" id="atd_file" style="display:none">
+											<div class="input-group">
+												<!-- File Name -->
+												<input type="text" class="form-control" name="filename" id="atd_filename" placeholder="File Name" onclick="$('#atd_file').click();">
+										        <span class="input-group-btn">
+										        	<button class="btn btn-default" type="button" onclick="$('#atd_file').click();"><i class="fa fa-paperclip"></i> Browse</button>
+										        </span>
+											</div>
+											<div class="form-group">
+												<!-- Mask -->
+												<input type="text" class="form-control" name="mask" id="atd_mask" placeholder="Mask">
+											</div>
+											<div class="form-group">
+												<button type="button" name="atd_access" id="atd_access" class="btn btn-default active"><i class="fa fa-check-square-o" id="atd_access_icon"></i> Customer can access</button>
+											</div>
+											<div class="form-group">
+												<button type="button" class="btn btn-success"  data-loading-text="Loading..." id="button-upload" onclick="atd_upload();"><i class="fa fa-upload"></i> Upload</button>
+											</div>
+										</form>
+								  </div>
+								</div>
 
-							<!-- File Table -->
-							<div class="panel panel-default">
-							    <div class="panel-heading clearfix">
-							    	<h3 class="panel-title" style="padding-top: 7.5px;"><i class="fa fa-files-o"></i> Attached Files:</h3>
-							    	<div class="pull-right">
-							    		<button class="btn btn-info" onclick="atd_getDownloads();" data-toggle="tooltip" data-original-title="Refresh Files"><i class="fa fa-refresh" id="atd_refresh"></i></button>
-							    	</div>
-							    </div>
-								<table class="table table-bordered" id="attached_download">
-									<thead>
-										<tr>
-											<td>Filename</td>
-											<td>Mask</td>
-											<td>Customer Access</td>
-											<td>Date Added</td>
-										</tr>
-									</thead>
-									<tbody>
-									</tbody>
-								</table>
+								<!-- File Table -->
+								<div class="panel panel-default">
+								    <div class="panel-heading clearfix">
+								    	<h3 class="panel-title" style="padding-top: 7.5px;"><i class="fa fa-files-o"></i> Attached files:</h3>
+								    	<div class="pull-right">
+								    		<span id="atd_refresh_text" class="success"></span>
+								    		<button class="btn btn-info"id="atd_refresh_btn" onclick="atd_getDownloads();" data-toggle="tooltip" data-original-title="Refresh Files"><i class="fa fa-refresh fa-spin" id="atd_refresh"></i></button>
+								    	</div>
+								    </div>
+									<table class="table table-bordered" id="attached_download">
+										<thead>
+											<tr>
+												<td>Filename</td>
+												<td>Mask</td>
+												<td>Customer Access</td>
+												<td>Date Added</td>
+												<td>Action</td>
+											</tr>
+										</thead>
+										<tbody>
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- ATD Modal Popup -->
-					<div class="modal fade" id="atd_modal" tabindex="-1">
-					    <div class="modal-dialog">
-					        <div class="modal-content">
-					            <div class="modal-header">
-					                <button class="close" data-dismiss="modal" type="button"><span>&times;</span></button>
-					                <h4 class="modal-title"><b>Module: Attached Download</b></h4>
-					            </div>
-					            <div class="modal-body">
-					              	<p class="text-danger" id="atd_modal_body"></p>
-					            </div>
-					            <div class="modal-footer">
-					                <button class="btn btn-default" data-dismiss="modal" type="button">Close</button> 
-					            </div>
-					        </div>
-					    </div>
-					</div>
-				</div>
-
+						<!-- ATD Modal Popup -->
+						<div class="modal fade" id="atd_modal" tabindex="-1">
+						    <div class="modal-dialog">
+						        <div class="modal-content">
+						            <div class="modal-header">
+						                <button class="close" data-dismiss="modal" type="button"><span>&times;</span></button>
+						                <h4 class="modal-title"><b>Attached Download:</b></h4>
+						            </div>
+						            <div class="modal-body">
+						              	<p class="text-danger" id="atd_modal_body"></p>
+						            </div>
+						            <div class="modal-footer">
+						                <button class="btn btn-default" data-dismiss="modal" type="button">Close</button> 
+						            </div>
+						        </div>
+						    </div>
+						</div>
+					<!-- End Container -->
+					</div> 
+				<?php endif; ?>
 			]]>
 			</add>
 		</operation>
@@ -112,161 +120,285 @@
 		<operation>
 			<search position="before"><![CDATA[<?php echo $footer; ?>]]></search>
 			<add><![CDATA[
-				<script>
-						//Get Downloads on page load
-						atd_getDownloads();
+				<?php if($atd_active == true): ?>
+					<script>
+							//Get Downloads on page load
+							atd_getDownloads();
 
-						//Monitor file upload button
-						$('#atd_file').change(function() {
-							$('#atd_filename').val($(this).val().split(/(\\|\/)/g).pop());
-							$('#atd_mask').val($(this).val().split(/(\\|\/)/g).pop());
-						});
+							//Monitor file upload button
+							$('#atd_file').change(function() {
+								$('#atd_filename').val($(this).val().split(/(\\|\/)/g).pop());
+								$('#atd_mask').val($(this).val().split(/(\\|\/)/g).pop());
+							});
 
-						//Monitor access checkbox
-						$('#atd_access').click(function(){
-							$('#atd_access').toggleClass('active');
-							$('#atd_access_icon').toggleClass('fa-check-square-o fa-square-o');
-						});
+							//Monitor access checkbox
+							$('#atd_access').click(function(){
+								$('#atd_access').toggleClass('active');
+								$('#atd_access_icon').toggleClass('fa-check-square-o fa-square-o');
+							});
 
-						//Monitor access update
-						$(document).on('click','.atd_access_update',function(){
-						   	$(this).toggleClass('label-success label-danger');
-						   	$(this).text(($(this).text() == 'Yes') ? 'No' : 'Yes');
-						   	var access = ($(this).data('access') == '1') ? '0' : '1';
+							//Monitor access update
+							$(document).on('click','.atd_access_update',function(){
+								//Set Spinner
+								atd_refreshBtn('start');
 
-						   	var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&access=' + 
-						   	access + '&id=' + $(this).data('id');
-						   	
-						   	$.getJSON(url);
+							   	$(this).toggleClass('label-success label-danger');
+							   	$(this).text(($(this).text() == 'Yes') ? 'No' : 'Yes');
+							   	var access = ($(this).data('access') == '1') ? '0' : '1';
 
-						});
+							   	var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&access=' + 
+							   	access + '&id=' + $(this).data('id');
+							   	
+							   	$.getJSON(url);
 
-						//Monitor mask edit
-						$(document).on('blur','.atd_mask_update',function(){
-							var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&mask=' + $(this).text() + '&id=' + $(this).data('id');
-						   	$.getJSON(url);
+							   	//Remove spinner
+			                   	atd_refreshBtn('stop');
+							});
 
-							$(this).toggleClass('text-success');
-					    });
+							//Monitor mask edit
+							$(document).on('blur','.atd_mask_update',function(){
+								//Set Spinner
+			                   	atd_refreshBtn('start');
+
+								var url = 'index.php?route=module/attached_download/update&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&mask=' + $(this).text() + '&id=' + $(this).data('id');
+							   	$.getJSON(url);
+
+								//Remove spinner
+			                   	atd_refreshBtn('stop');
+						    });
 
 
-						//Get downloads function
-						function atd_getDownloads(){
-							//Add spin to refresh button
-							$('#atd_refresh').addClass('fa-spin fa-refresh')
-								.removeClass('fa-check');
+						    //Refresh button function
+						    function atd_refreshBtn(status){
+						    	switch(status){
+						    		case 'start':
+						    			$('#atd_refresh_text').text('');
+						    			$('#atd_refresh').toggleClass('fa-check fa-spin fa-refresh');
+						    			$('#atd_refresh_btn').removeClass('btn-success').addClass('btn-info');
+						    			break;
+						    		case 'stop':
+						    			var formatTime = (function () {
+										    function addZero(num) {
+										        return (num >= 0 && num < 10) ? "0" + num : num + "";
+										    }
 
-							//Clear table
-							$("#attached_download tbody tr").remove();
+										    return function (dt) {
+										        var formatted = '';
 
-							//Get Download List For Order #
-							var url = 'index.php?route=module/attached_download/get_order_download&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>';
-							$.getJSON(url,
-			                    function(data){
-			                        if (!data['err']) {
-			                            //Loop through json return
-			                            $.each(data, function (key, value) {
-			                            	atd_addRow(value['id'], value['filename'], value['mask'], value['date'], value['access'], value['link']);
-			                            });
-			                        }else{
-			                        	//Show Error
-			                        	$('#atd_modal_body').text(data['err']);
-										$('#atd_modal').modal('show');
-			                        }
-		                    }); //End getJSON
+										        if (dt) {
+										            var hours24 = dt.getHours();
+										            var hours = ((hours24 + 11) % 12) + 1;
+										            formatted = [formatted, [addZero(hours), addZero(dt.getMinutes())].join(":"), hours24 > 11 ? "pm" : "am"].join(" ");            
+										        }
+										        return formatted;
+										    }
+										})();
 
-		                    //Remove spinner
-		                    setTimeout(function(){
-		                    	$('#atd_refresh').removeClass('fa-spin').toggleClass('fa-refresh fa-check');
-							}, 500);
-			            }
+						    			setTimeout(function(){
+							    			$('#atd_refresh').toggleClass('fa-check fa-spin fa-refresh');
+							    			$('#atd_refresh_btn').toggleClass('btn-info btn-success');
+							    			$('#atd_refresh_text').text('Updated: ' + formatTime(new Date()));
+							    		}, 500);
+							    		break;
+						    	}
+						    }
 
-			            //Add downloads to table
-						function atd_addRow(id, filename, mask, date, access, link){
-							var accessClass = 'label-success';
-							var accessText = 'Yes';
-							if(access == false){
-								accessClass = 'label-danger';
-								accessText = 'No';
+							//Get downloads function
+							function atd_getDownloads(){
+								//Add spin to refresh button
+								//atd_refreshBtn('start');
+								$('#atd_refresh').addClass('fa-spin fa-refresh').removeClass('fa-check');
+								$('#atd_refresh_btn').removeClass('btn-success').addClass('btn-info');
+
+								//Clear table
+								$("#attached_download tbody tr").remove();
+
+								//Get Download List For Order #
+								var url = 'index.php?route=module/attached_download/get_order_download&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>';
+								$.getJSON(url,
+				                    function(data){
+				                        if (!data['err']) {
+				                            //Loop through json return
+				                            $.each(data, function (key, value) {
+				                            	atd_addRow(value['id'], value['filename'], value['mask'], value['date'], value['access'], value['link']);
+				                            });
+				                        }else{
+				                        	//Show Error
+				                        	$('#atd_modal_body').text(data['err']);
+											$('#atd_modal').modal('show');
+				                        }
+			                    }); //End getJSON
+
+			                    //Remove spinner
+			                    atd_refreshBtn('stop');
+				            }
+
+				            //Add downloads to table
+							function atd_addRow(id, filename, mask, date, access, link){
+								var accessClass = 'label-success';
+								var accessText = 'Yes';
+								if(access == false){
+									accessClass = 'label-danger';
+									accessText = 'No';
+								}
+
+								var buttons = '<button class="btn btn-danger" data-id="' + id + '" onclick="atd_delete(\'' + id + '\')"><i class="fa fa-trash-o"></i></button>';
+
+								var table = '<tr><td><a href="' + link + '">' + filename + '</a></td>' +
+									'<td contenteditable="true" class="atd_mask_update" data-id="' + id + '">' + mask + '</td>' +
+									'<td><span data-access="' + access + '" data-id="' + id + '" style="cursor: pointer;" class="label ' + accessClass + ' atd_access_update">' + accessText + '</span></td>' +
+									'<td>' + date + '</td>' +
+									'<td>' + buttons + '</td>' +
+									'</tr>';
+								$('#attached_download > tbody:last').append(table);
 							}
 
-							var buttons = '<button class="btn btn-info"><i class="fa fa-pencil"></i></button>';
+							//Upload new file
+							function atd_upload(){
+								if ($('#atd_upload input[name=\'file\']').val() != '') {
+									$.ajax({
+										url: 'index.php?route=catalog/download/upload&token=<?php echo $token; ?>',
+										type: 'post',		
+										dataType: 'json',
+										data: new FormData($('#atd_upload')[0]),
+										cache: false,
+										contentType: false,
+										processData: false,		
+										beforeSend: function() {
+											$('#button-upload').button('loading');
+										},
+										complete: function() {
+											$('#button-upload').button('reset');
+										},	
+										success: function(json) {
+											if (json['error']) {
+												$('#atd_modal_body').text(json['error']);
+												$('#atd_modal').modal('show');
+											}
+														
+											if (json['success']) {
+												//Add to atd database
+												var access;
+												
+												if ($('#atd_access').hasClass('active')){
+													access = true;
+												}else{
+													access = false;
+												}
 
-							var table = '<tr><td><a href="' + link + '">' + filename + '</a></td>' +
-								'<td contenteditable="true" class="atd_mask_update" data-id="' + id + '">' + mask + '</td>' +
-								'<td><span data-access="' + access + '" data-id="' + id + '" style="cursor: pointer;" class="label ' + accessClass + ' atd_access_update">' + accessText + '</span></td>' +
-								'<td>' + date + '</td>' +
-								'</tr>';
-							$('#attached_download > tbody:last').append(table);
-						}
+												var mask = $('#atd_mask').val();
+												var url = 'index.php?route=module/attached_download/upload&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&customer_id=<?php echo $customer_id; ?>&filename=' + json['filename'] + '&mask=' + mask + '&access=' + access;
+												$.getJSON(url,
+								                    function(data){
+								                        if (!data['err']) {
+								                        	//Alert User
+								                        	$(".container-fluid").eq(1).prepend("<div class=\"alert alert-success\"><i class=\"fa fa-checkcheck-circle\"></i> File Uploaded Successfully! <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
+								                        }else{
+								                        	//Show Error
+								                        	$(".container-fluid").eq(1).prepend("<div class=\"alert alert-danger\"><i class=\"fa fa-checkcheck-circle\"></i>" + data['err'] + "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
+								                        }
+							                    }); //End getJSON
 
-						//Upload new file
-						function atd_upload(){
+												//Clear form for new upload!!!!
+												$('#atd_upload').trigger('reset');
 
-							if ($('#atd_upload input[name=\'file\']').val() != '') {
-								$.ajax({
-									url: 'index.php?route=catalog/download/upload&token=<?php echo $token; ?>',
-									type: 'post',		
-									dataType: 'json',
-									data: new FormData($('#atd_upload')[0]),
-									cache: false,
-									contentType: false,
-									processData: false,		
-									beforeSend: function() {
-										$('#button-upload').button('loading');
-									},
-									complete: function() {
-										$('#button-upload').button('reset');
-									},	
-									success: function(json) {
-										if (json['error']) {
-											$('#atd_modal_body').text(json['error']);
-											$('#atd_modal').modal('show');
+												//Get New file list
+												atd_getDownloads();
+											}
+										},			
+										error: function(xhr, ajaxOptions, thrownError) {
+											$(".container-fluid").eq(1).prepend("<div class=\"alert alert-danger\"><i class=\"fa fa-checkcheck-circle\"></i> Unable to upload file. <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
 										}
-													
-										if (json['success']) {
-											//Add to atd database
-											var access;
-											
-											if ($('#atd_access').hasClass('active')){
-												access = true;
-											}else{
-												access = false;
+									});
+								};
+							}
+
+							function atd_delete(file_id){
+								console.log("Start Delete");
+								console.log("ID: " + file_id);
+								$.ajax({
+										url: 'index.php?route=module/attached_download/delete&token=<?php echo $token; ?>&id=' + file_id,
+										type: 'get',		
+										dataType: 'json',
+										cache: false,
+										contentType: false,
+										processData: false,		
+										beforeSend: function() {
+											$('#button-upload').button('loading');
+										},
+										complete: function() {
+											$('#button-upload').button('reset');
+										},	
+										success: function(json) {
+											if (json['error']) {
+												$(".container-fluid").eq(1).prepend("<div class=\"alert alert-danger\"><i class=\"fa fa-checkcheck-circle\"></i> Unable to delete file. <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
+											}
+											if (json['success']) {
+												$(".container-fluid").eq(1).prepend("<div class=\"alert alert-success\"><i class=\"fa fa-checkcheck-circle\"></i> File Deteted. <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
 											}
 
-											var mask = $('#atd_mask').val();
-											var url = 'index.php?route=module/attached_download/upload&token=<?php echo $token; ?>&order_id=<?php echo $order_id?>&filename=' + json['filename'] + '&mask=' + mask + '&access=' + access;
-											$.getJSON(url,
-							                    function(data){
-							                        if (!data['err']) {
-
-							                        }else{
-							                        	//Show Error
-							                        	$('#atd_modal_body').text(data['err']);
-														$('#atd_modal').modal('show');
-							                        }
-						                    }); //End getJSON
-
-											//Clear form for new upload!!!!
-											$('#atd_upload').trigger('reset');
-
-											//Alert user
-											//alert('File Uploaded!!!!');
-
-											//Get New file list
-											atd_getDownloads();
+										},
+										error: function(xhr, ajaxOptions, thrownError) {
+											$(".container-fluid").eq(1).prepend("<div class=\"alert alert-danger\"><i class=\"fa fa-checkcheck-circle\"></i> Unable to delete file. <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button></div>");
 										}
-									},			
-									error: function(xhr, ajaxOptions, thrownError) {
-										//alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-										$('#atd_modal_body').text(thrownError);
-										$('#atd_modal').modal('show');
-									}
-								});
-							};
-						}
-				</script>
+									});
+
+								atd_getDownloads();
+							}
+					</script>
+				<?php endif; ?>
 			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/controller/account/download.php">
+		<operation>
+			<search position="before"><![CDATA[foreach ($results as $result) {]]></search>
+			<add><![CDATA[
+					/*
+					| Attached Downloads
+					 */
+					$this->load->model('module/attached_download'); //Load the model
+					$atd_count = $this->model_module_attached_download->getDownloadCount($this->customer->getId()); //Get order count
+					//Check if there are any attached downloads
+					if($atd_count > 0){
+						$atd_downloads = $this->model_module_attached_download->getDownloads($this->customer->getId());
+
+						foreach ($atd_downloads as $atd_download) {
+							if (file_exists(DIR_DOWNLOAD . $atd_download['filename'])) {
+								$size = filesize(DIR_DOWNLOAD . $atd_download['filename']);
+
+								$i = 0;
+
+								$suffix = array(
+									'B',
+									'KB',
+									'MB',
+									'GB',
+									'TB',
+									'PB',
+									'EB',
+									'ZB',
+									'YB'
+								);
+
+								while (($size / 1024) > 1) {
+									$size = $size / 1024;
+									$i++;
+								}
+
+								$data['downloads'][] = array(
+									'order_id'   => $atd_download['order_id'],
+									'date_added' => date($this->language->get('date_format_short'), strtotime($atd_download['date_added'])),
+									'name'       => $atd_download['mask'],
+									'size'       => round(substr($size, 0, strpos($size, '.') + 4), 2) . $suffix[$i],
+									'href'       => $this->url->link('module/attached_download/download&id=' . $atd_download['id'], 'token=' . $this->session->data['token'], 'SSL')
+								);
+							}
+						}
+
+					}
+
+				]]></add>
 		</operation>
 	</file>
 </modification>
