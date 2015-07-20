@@ -391,7 +391,7 @@
 									'date_added' => date($this->language->get('date_format_short'), strtotime($atd_download['date_added'])),
 									'name'       => $atd_download['mask'],
 									'size'       => round(substr($size, 0, strpos($size, '.') + 4), 2) . $suffix[$i],
-									'href'       => $this->url->link('module/attached_download/download&id=' . $atd_download['id'], 'token=' . $this->session->data['token'], 'SSL')
+									'href'       => $this->url->link('module/attached_download/download' , '&id=' . $atd_download['id'], 'SSL')
 								);
 							}
 						}
