@@ -230,16 +230,5 @@ class ControllerModuleAttachedDownload extends Controller {
            return false;
         }
 	}
-
-	/**
-	 * Test Function for some testing of some stuff
-	 */
-	public function test(){
-		$this->load->model('setting/setting'); 
-		$this->model_setting_setting->editSetting('atd', [
-			'atd_client_dl' => true, 
-			'atd_active' => true
-			]);
-	}
 }
 ?>
