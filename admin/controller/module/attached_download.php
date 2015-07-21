@@ -10,6 +10,7 @@ class ControllerModuleAttachedDownload extends Controller {
 		$sql = "CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "attached_download` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `order_id` int(11) NOT NULL,
+		  `customer_id` int(11) NOT NULL,
 		  `access` int(11) NOT NULL DEFAULT '1',
 		  `filename` varchar(128) DEFAULT NULL,
 		  `mask` varchar(145) DEFAULT NULL,
